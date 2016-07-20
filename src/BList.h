@@ -207,15 +207,30 @@ public:
 
 	void foreach(bool (*cb)(TV *v))
 	{
+		printf("*********************************\n");
 		BLNode *curr = this->mHead;
 		while (curr)
 		{
 			if (cb(&curr->mData))
 			{
-				curr->mNext->mPre = curr->mPre;
-				curr->mPre->mNext = curr->mNext;
+				if (curr->mNext)
+				{
+					curr->mNext->mPre = curr->mPre;
+				}
+				if (curr->mPre)
+				{
+					curr->mPre->mNext = curr->mNext;
+				}
 				BLNode *tmp = curr; 
 				curr = curr->mNext;
+				if (this->mHead == tmp)
+				{
+					this->mHead = curr;
+				}
+				if (this->mTail == tmp)
+				{
+					this->mTail = curr;
+				}
 				delete tmp;
 			}
 			else
@@ -223,6 +238,7 @@ public:
 				curr = curr->mNext;
 			}
 		}
+		printf("*********************************\n\n");
 	}
 
 	void deleByKey(TK &k)
