@@ -75,16 +75,21 @@ public:
 
 	void checkNeedAddKeyNode(size_t idx, BLNode *node)
 	{
-		if (this->mKeyNodes[idx]->mNodeNum > this->mStep)
+		if (this->mKeyNodes[idx]->mNodeNum >= this->mStep)
 		{
-			this->mCap++;
-			this->mKeyNodes = (KeyNode**)realloc(this->mKeyNodes, sizeof(KeyNode*) * this->mCap);
-			if (idx < (this->mCap-2))
+			this->mKeyNodeNum++;
+			if (this->mKeyNodeNum > this->mCap)
 			{
-				memmove(this->mKeyNodes + 1, this->mKeyNodes + 2, sizeof(KeyNode*)* (this->mCap - idx - 2));
+				this->mCap++;
+				this->mKeyNodes = (KeyNode**)realloc(this->mKeyNodes, sizeof(KeyNode*) * this->mCap);	
+			}
+			if (idx < (this->mKeyNodeNum - 2))
+			{
+				memmove(this->mKeyNodes + 1, this->mKeyNodes + 2, sizeof(KeyNode*)* (this->mKeyNodeNum - idx - 2));
 			}
 			this->mKeyNodes[idx + 1] = new KeyNode(node);
 			this->mKeyNodes[idx]->mNodeNum--;
+			
 		}
 
 	}
@@ -100,8 +105,8 @@ public:
 		{
 			BLNode *node = 0;
 			size_t preBeginIdx = 0;
-			size_t preEndIdx = this->mCap - 1;
-			size_t idx = this->mCap / 2;
+			size_t preEndIdx = this->mKeyNodeNum - 1;
+			size_t idx = this->mKeyNodeNum / 2;
 			while (preBeginIdx <= preEndIdx)
 			{
 				node = this->mKeyNodes[idx]->getNode();
@@ -147,7 +152,7 @@ public:
 				}
 				else if (k > node->mKey)
 				{
-					if (idx < (this->mCap - 1))
+					if (idx < (this->mKeyNodeNum - 1))
 					{
 						if (k < this->mKeyNodes[idx + 1]->getNode()->mKey)
 						{
@@ -207,6 +212,7 @@ public:
 			BLNode *newNode = new BLNode(k, v, 0, 0);
 			this->mKeyNodes = (KeyNode**)realloc(this->mKeyNodes, sizeof(KeyNode*) * this->mCap);
 			this->mKeyNodes[0] = new KeyNode(newNode);
+			this->mKeyNodeNum++;
 			this->mHead = this->mTail = newNode;
 		}
 	}
@@ -214,9 +220,14 @@ public:
 	void foreach(bool (*cb)(TV *v))
 	{
 		printf("*********************************\n");
+		size_t kNodeIdx = 0;
 		BLNode *curr = this->mHead;
 		while (curr)
 		{
+			if ((kNodeIdx+1 < this->mKeyNodeNum) && curr == this->mKeyNodes[kNodeIdx + 1]->getNode())
+			{
+				kNodeIdx++;
+			}
 			if (cb(&curr->mData))
 			{
 				if (curr->mNext)
@@ -238,6 +249,14 @@ public:
 					this->mTail = 0;
 				}
 				delete tmp;
+				this->mKeyNodes[kNodeIdx]->mNodeNum--;
+				if (this->mKeyNodes[kNodeIdx]->mNodeNum == 0)
+				{
+					delete this->mKeyNodes[kNodeIdx];
+					memmove(this->mKeyNodes + kNodeIdx, this->mKeyNodes + kNodeIdx + 1, sizeof(KeyNode*)*(this->mKeyNodeNum - kNodeIdx - 1));
+					this->mKeyNodeNum--;
+					kNodeIdx--;
+				}
 			}
 			else
 			{
