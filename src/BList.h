@@ -15,7 +15,7 @@ static const int moveCount = (sizeof(void*)-1)*8;
 	(*(void**)ppNode) = (void*)((long)(*ppNode) & ((long)tmp >> moveCount + n) << moveCount); \
 }while (0)
 
-//#define getNodeByKeyNode(pNode) ((pNode << 8) >> 8)
+
 	
 
 template<class TK, class TV>
@@ -71,25 +71,14 @@ public:
 		return p;
 	}
 
-	TV *get(TK &k)
+	void addKeyNode(BLNode *node)
 	{
 
 	}
 
-	BLNode *getNodeByKey(TK &k)
+	TV *get(TK &k)
 	{
-		if (this->mLen == 0)
-		{
-			return 0;
-		}
-		else
-		{
-			BLNode *node = 0;
-			size_t preBeginIdx = 0;
-			size_t preEndIdx = this->mLen - 1;
-			size_t idx = this->mLen / 2;
-			while (preBeginIdx <= preEndIdx)
-		}
+
 	}
 
 	void set(TK &&k, TV &&v)
@@ -102,12 +91,12 @@ public:
 			size_t idx = this->mCap / 2;
 			while (preBeginIdx <= preEndIdx)
 			{
-				node = this->mKeyNodes[idx]->mNode;
+				node = this->mKeyNodes[idx]->getNode();
 				if (k < node->mKey)
 				{
 					if (idx > 0)
 					{
-						node = this->mKeyNodes[idx - 1]->mNode;
+						node = this->mKeyNodes[idx - 1]->getNode();
 						if (k > node->mKey)
 						{
 							while (node->mNext && (k > node->mNext->mKey))
@@ -145,7 +134,7 @@ public:
 				{
 					if (idx < (this->mCap - 1))
 					{
-						if (k < this->mKeyNodes[idx + 1]->mNode->mKey)
+						if (k < this->mKeyNodes[idx + 1]->getNode()->mKey)
 						{
 							while (node->mNext && (k > node->mNext->mKey))
 							{
@@ -274,11 +263,6 @@ public:
 	void resetKeyNode(BLNode **ppNode)
 	{
 
-	}
-
-	BLNode *getNodeByKeyNode(BLNode *pNode)
-	{
-		return (BLNode*)(((long)pNode << 8) >> 8);
 	}
 
 	size_t mLen; 
