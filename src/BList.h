@@ -45,10 +45,12 @@ public:
 		}
 		void setNode(BLNode *node)
 		{
+			//this->mNode = (BLNode*)((long)node | 1);
 			this->mNode = node;
 		}
 		BLNode *getNode()
 		{
+			//return (BLNode*)((long)this->mNode & 0xFFFFFFFFFFFFFFF0);
 			return this->mNode;
 		}
 		BLNode *mNode;
@@ -71,8 +73,19 @@ public:
 		return p;
 	}
 
-	void addKeyNode(BLNode *node)
+	void checkNeedAddKeyNode(size_t idx, BLNode *node)
 	{
+		if (this->mKeyNodes[idx]->mNodeNum > this->mStep)
+		{
+			this->mCap++;
+			this->mKeyNodes = (KeyNode**)realloc(this->mKeyNodes, sizeof(KeyNode*) * this->mCap);
+			if (idx < (this->mCap-2))
+			{
+				memmove(this->mKeyNodes + 1, this->mKeyNodes + 2, sizeof(KeyNode*)* (this->mCap - idx - 2));
+			}
+			this->mKeyNodes[idx + 1] = new KeyNode(node);
+			this->mKeyNodes[idx]->mNodeNum--;
+		}
 
 	}
 
@@ -110,6 +123,7 @@ public:
 							}
 							node->mNext = newNode;
 							this->mLen++;
+							this->checkNeedAddKeyNode(idx, newNode);
 							break;
 						}
 						else
@@ -126,6 +140,7 @@ public:
 						this->mKeyNodes[0]->mNodeNum++;
 						this->mHead = newNode;
 						this->mLen++;
+						this->checkNeedAddKeyNode(idx, newNode);
 						break;
 					}
 					
@@ -147,6 +162,7 @@ public:
 							}
 							node->mNext = newNode;
 							this->mLen++;
+							this->checkNeedAddKeyNode(idx, newNode);
 							break;
 						}
 						else
@@ -173,6 +189,7 @@ public:
 						node->mNext = newNode;
 						this->mLen++;
 						this->mKeyNodes[idx]->mNodeNum++;
+						this->checkNeedAddKeyNode(idx, newNode);
 						break;
 					}
 				}
@@ -218,7 +235,7 @@ public:
 				}
 				if (this->mTail == tmp)
 				{
-					this->mTail = curr;
+					this->mTail = 0;
 				}
 				delete tmp;
 			}
